@@ -20,9 +20,9 @@ public class MeuServlet extends HttpServlet {
 			throws ServletException, IOException {
 		Enumeration<String> cabecalho = req.getHeaderNames();
 		
-		resp.setContentType("text/txt");
+		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
-		out.println("<html><body><h1>Cabeçalho HTTP</h1><ul>");
+		out.println("<html><body><h1>Cabeï¿½alho HTTP</h1><ul>");
 		while (cabecalho.hasMoreElements()) {
 			String header = cabecalho.nextElement();
 			out.println("<li>"+header+" = "+req.getHeader(header)+"</li>");
