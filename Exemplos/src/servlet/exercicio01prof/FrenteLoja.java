@@ -2,7 +2,6 @@ package servlet.exercicio01prof;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -12,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import negocio.exercicio01prof.CarrinhoDeCompras;
+import negocio.exercicio01prof.ItemDeVenda;
 import negocio.exercicio01prof.Loja;
 import negocio.exercicio01prof.Produto;
 
@@ -35,9 +36,17 @@ public class FrenteLoja extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		out.println("<html><head><title>Loja Virtual</title></head>");
 		out.println("<body><h1>Loja Virtual</h1>");
-		out.println("<h3>Cat·logo de Produtos</h3>");
+		
+		// Exibe poss√≠veis mensagens de erro
+		String erro = req.getParameter("erro");
+		if (erro != null && !erro.isEmpty()) {
+			out.println("<h3><font color=\"red\">"+erro+"</font></h3>");
+		}
+		
+		// Exibe o cat√°logo de produtos
+		out.println("<h3>Cat√°logo de Produtos</h3>");
 		out.println("<table border=\"1\"><tr><th>Produto</th><th>Descricao</th>"
-					+ "<th>Unidade</th><th>PreÁo</th><th>AÁ„o</th></tr>");
+					+ "<th>Unidade</th><th>Pre√ßo</th><th>A√ß√£o</th></tr>");
 		for(Produto p : lista) {
 			out.println("<tr><td>"+p.getNome()+"</td><td>"+p.getDescricao()+"</td>");
 			out.println("<td>"+p.getUnidade()+"</td><td>"+p.getPreco()+"</td>");
@@ -61,18 +70,18 @@ public class FrenteLoja extends HttpServlet {
 			resp.sendRedirect("/Exemplos/store");
 		}
 		
-		// Recuperar a sess„o e armazenar o produto desejado
+		// Recuperar a sess√£o e armazenar o produto desejado
 		HttpSession session = req.getSession();
-		@SuppressWarnings("unchecked")
-		List<String> carrinho = (List<String>) session.getAttribute("carrinho");
+		CarrinhoDeCompras carrinho = (CarrinhoDeCompras) session.getAttribute("carrinho");
 		if (carrinho == null) {
-			carrinho = new ArrayList<String>();
+			carrinho = new CarrinhoDeCompras();
 		}
 		
-		// Procurar se o produto j· est· no carrinho
+		// Procurar se o produto j√° est√° no carrinho - adicionando a quantidade do mesmo
 		boolean novo = true;
-		for (String p: carrinho) {
-			if (p.equals(produto)) {
+		for (ItemDeVenda item: carrinho.getItems()) {
+			if (item.getProduto().getNome().equals(produto)) {
+				item.adicionaQuantidade();
 				novo = false;
 				break;
 			}
@@ -80,12 +89,15 @@ public class FrenteLoja extends HttpServlet {
 		
 		// Adicionar no carrinho
 		if (novo) {
-			carrinho.add(produto);
+			Produto p = loja.getProdutoByNome(produto);
+			ItemDeVenda iv = new ItemDeVenda();
+			iv.setProduto(p);
+			iv.setQuantidade(1);
+			carrinho.addItem(iv);
 		}
 		
-		// Guardar carrinho na sess„o
+		// Guardar carrinho na sess√£o
 		session.setAttribute("carrinho", carrinho);
-		session.setMaxInactiveInterval(10);
 		
 		//Imprimir a resposta HTML
 		PrintWriter out = resp.getWriter();
@@ -95,9 +107,9 @@ public class FrenteLoja extends HttpServlet {
 		if (novo) {
 			out.println("<h2>Produto \""+produto+"\" adicionado com sucesso</h2>");
 		} else {
-			out.println("<h2>Produto j· est· no carrinho</h2>");
+			out.println("<h2>Quantida do produto desejado foi incrementada de uma unidade</h2>");
 		}
-		out.print("<a href=\"/Exemplos/store\">Voltar ao cat·logo de produtos</a> ou ");
+		out.print("<a href=\"/Exemplos/store\">Voltar ao cat√°logo de produtos</a> ou ");
 		out.println("<a href=\"/Exemplos/carrinho\">acesse o carrinho de compras</a>");
 		out.println("</body></html>");
 		out.close();

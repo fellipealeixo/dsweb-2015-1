@@ -2,8 +2,6 @@ package servlet.exercicio01prof;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,6 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import negocio.exercicio01prof.CarrinhoDeCompras;
+import negocio.exercicio01prof.ItemDeVenda;
 
 @WebServlet(name = "carrinho", urlPatterns = { "/carrinho" })
 public class Carrinho extends HttpServlet {
@@ -27,10 +28,9 @@ public class Carrinho extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// Exibir o carrinho de compras
 		HttpSession session = request.getSession();
-		@SuppressWarnings("unchecked")
-		List<String> carrinho = (List<String>) session.getAttribute("carrinho");
+		CarrinhoDeCompras carrinho = (CarrinhoDeCompras) session.getAttribute("carrinho");
 		if (carrinho == null) {
-			carrinho = new ArrayList<String>();
+			carrinho = new CarrinhoDeCompras();
 			session.setAttribute("carrinho", carrinho);
 		}
 		
@@ -41,11 +41,13 @@ public class Carrinho extends HttpServlet {
 		if (carrinho.isEmpty()) {
 			out.println("<p>Nenhum produto foi adicionado ao carrinho.</p>");
 		} else {
-			out.println("<ol>");
-			for (String p: carrinho) {
-				out.println("<li>"+p+"</li>");
+			out.println("<ul>");
+			for (ItemDeVenda item: carrinho.getItems()) {
+				out.println("<li>"+item.getProduto().getNome()+" - quantidade = "+item.getQuantidade()+
+						" - Preço unitário = R$ "+item.getProduto().getPreco()+" - Subtotal = R$ "+item.getSubTotal()+"</li>");
 			}
-			out.println("</ol>");
+			out.println("</ul>");
+			out.println("<p><b>Valor total = R$ "+carrinho.getTotal()+"</b></p>");
 			out.println("<a href=\"/Exemplos/finalizaCompra\">Finaliza a compra</a><br>");
 		}
 		out.println("<a href=\"/Exemplos/store\">Continuar comprando...</a><br>");
